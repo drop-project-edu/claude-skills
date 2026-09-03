@@ -1,0 +1,21 @@
+{
+  "name": "drop-project",
+  "owner": {
+    "name": "Drop Project",
+    "url": "https://github.com/drop-project-edu"
+  },
+  "description": "Claude Code skills for teachers who use Drop Project.",
+  "plugins": [
+    {
+      "name": "dropproject-assignments",
+      "source": "./",
+      "description": "Create a Drop Project assignment end to end, or reuse one from a previous school year.",
+      "version": "1.0.0",
+      "license": "Apache-2.0",
+      "skills": [
+        "./skills/create-dropproject-assignment",
+        "./skills/reuse-dropproject-assignment"
+      ]
+    }
+  ]
+}
