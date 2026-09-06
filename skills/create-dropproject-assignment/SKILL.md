@@ -68,6 +68,10 @@ Rules the validator enforces, worth getting right the first time:
 - **`instructions.md`** is rendered on the assignment page. Write it for the students: what to
   implement, the expected signatures, and what is graded.
 
+The rules above are what the *validator* enforces. What the tests should actually assert, and how
+much feedback each assertion should give, is a separate question with its own answers - use the
+`write-dropproject-teacher-tests` skill for it.
+
 Write the tests against the exercise, then verify locally before pushing:
 
 ```bash
