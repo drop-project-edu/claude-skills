@@ -28,13 +28,17 @@ one is about what a defense adds on top.
 Ask for whatever is missing - none of these is safe to invent:
 
 - **which assignment is being defended**, and the git repository behind it. Usually a project, but a
-  large weekly exercise works the same way.
+  weekly assignment works the same way. Which of the two it is decides what happens to the original
+  test suite - see [step 4](#the-original-test-suite-project-vs-weekly-assignment).
 - **which exam period**: normal, recurso, época especial. It goes in the name and the tags.
-- **how many parallel versions**, and who gets each one. See
+- **how the sittings are scheduled** - one room at once, or one turma at a time - and **the list of
+  turmas with their students**, which is what fixes the number of versions. See
   [Parallel versions](#parallel-versions-are-the-norm).
 - **the duration**, in minutes. It goes in the instructions.
 - **the conduct rules and the code-quality penalty** for this course, which the teacher usually
-  reuses verbatim from the previous edition.
+  reuses verbatim from the previous edition - **except what may be consulted**. Ask explicitly
+  whether the open internet is allowed or students are restricted to Moodle: it changes between
+  defenses, and it is not safe to copy from last year.
 - **whether this Drop Project instance supports linked defenses** (see below). If unsure, open the
   assignment creation form and look for an "Assignment type: Normal / Defense" radio.
 
@@ -54,14 +58,25 @@ in the web ui, on the assignment form.
 
 ### Parallel versions are the norm
 
-Students sit the defense at the same time, so a single version is a single answer to copy. Real
-defenses ship two or three versions that are **structurally parallel and factually different**: the
-same number of changes, the same kinds of change, the same number of tests, different specifics.
-Each version is a separate assignment and a separate repository (`defesa-v1`, `defesa-v2`, ...),
-`PRIVATE`, with its own slice of the class in `assignees`.
+A single version is a single answer to copy. Real defenses ship several versions that are
+**structurally parallel and factually different**: the same number of changes, the same kinds of
+change, the same number of tests, different specifics. Each version is a separate assignment and a
+separate repository (`defesa-v1`, `defesa-v2`, ...), `PRIVATE`, with its own slice of the students in
+`assignees`.
 
-Version parity is a grading fairness requirement, not a nicety. `references/change-catalog.md`
-explains how to keep versions equivalent.
+How many versions depends on how the sittings are scheduled, and the two cases are different:
+
+- **A project defense** is one sitting, everyone at once, in the same room. Two or three versions are
+  enough: they split the room so that neighbours are not solving the same exercise.
+- **A weekly assignment or mini-ficha defense** is sat **in the practical class, one turma at a
+  time**, hours or days apart. So there must be **as many versions as there are turmas**: the moment
+  the first turma leaves the room, its instructions are in the hands of every colleague who has not
+  sat it yet, and a shared version stops measuring anything. One version per turma, `assignees` set
+  to that turma's students, and the instructions of each released only when that turma sits.
+
+Version parity is a grading fairness requirement, not a nicety, and it gets harder the more versions
+there are - with one per turma, write the first version fully and then derive the rest from it
+change by change. `references/change-catalog.md` explains how to keep versions equivalent.
 
 ## 1. Derive the defense repository from the project's
 
@@ -77,10 +92,12 @@ git remote set-url origin git@github.com:<ORG>/defesa-v1.git
 
 Then strip what a defense does not need, which is most of the delivery machinery:
 
-- **the project's own test classes.** Delete `TestTeacherP1`, `TestTeacherHidden*` and friends.
-  **Keep** the classes that only hold shared fixtures and builders (`TestTeacherCommon*`) - the
-  defense tests extend them, and adapting a fixture is often how a defense test gets the input it
-  needs. See [step 4](#4-write-the-defense-tests).
+- **the original test classes - only when defending a project.** Delete `TestTeacherP1`,
+  `TestTeacherHidden*` and friends. **Keep** the classes that only hold shared fixtures and builders
+  (`TestTeacherCommon*`) - the defense tests extend them, and adapting a fixture is often how a
+  defense test gets the input it needs. When defending a **weekly assignment**, keep the original
+  tests as well, minus the ones the defense contradicts. See
+  [step 4](#the-original-test-suite-project-vs-weekly-assignment).
 - **the GUI simulator, the shade plugin, jacoco**, and anything else that only existed to let
   students run or cover the project. A defense accepts no student tests.
 - rename the `artifactId` after the defense.
@@ -160,11 +177,37 @@ forget. Two ways, both cheap:
   the employee, move the player - so a student who broke the constructor to make change 3 pass fails
   visibly.
 
-Do not simply keep the project's whole test suite alongside the defense tests. It re-punishes
-pre-existing bugs, and it buries the eight results that matter under sixty that do not.
+### The original test suite: project vs weekly assignment
 
-Announce the count in the instructions ("estas alterações traduzem-se em 8 testes"), and keep it
-true when tests are added or removed.
+Whether the original tests ship alongside the defense tests depends on what is being defended, and
+the two answers are opposite.
+
+**Defending a project: drop them.** A project's suite is large, its results would bury the eight
+that matter, and part of it is hidden tests the student never saw fail - keeping it re-punishes bugs
+the project already had, which is invariant 3. The two techniques above are the guard against
+rewriting, and they are enough.
+
+**Defending a weekly assignment: keep the tests for the features that were not supposed to change.**
+A weekly assignment's suite is small enough not to drown the defense results, all of it is public,
+and the student already saw it pass the week they submitted - so keeping it re-punishes nothing and
+enforces invariant 2 with tests the student already recognises. Concretely:
+
+- keep the original test classes as they are, and add `TestTeacherDefesa` next to them.
+- **delete or adapt every original test the defense contradicts.** If change 3 asks for a new
+  `toString()` format, the original test asserting the old format has to go, or be rewritten around
+  the part of the format that survives - otherwise the student is graded down for doing exactly what
+  was asked. Go through the changes one by one against the original suite; this is the step that
+  gets missed.
+- keep the original names and the original `test_00N_` numbering, so a student reading the report
+  recognises which results are old and which are new. Number the defense tests in their own class,
+  from 1, following the instructions.
+- run the original suite against the reference solution of [step 3](#3-apply-the-changes-to-the-reference-solution)
+  before pushing. Anything that fails there is a test the defense contradicts and you missed.
+
+Announce the count of **defense** tests in the instructions ("estas alterações traduzem-se em 8
+testes"), and keep it true when tests are added or removed. When the original tests are kept, say so
+too, and say that they must still pass - it is the same grading criterion as invariant 2, and the
+student will see those results in the report either way.
 
 ## 5. Write the instructions
 
@@ -181,8 +224,11 @@ Two rules that matter more than the rest:
 - **State that the original behaviour must survive**, in the introduction, in the teacher's own
   words. It is a grading criterion, so it belongs in the instructions.
 
-The first numbered instruction is always `AUTHORS.txt`: a project made in pairs is defended
-individually, so the student has to cut it down to their own number and name.
+**When the assignment being defended was done in groups**, the first numbered instruction is
+`AUTHORS.txt`: a project made in pairs is defended individually, so the student has to cut the file
+down to their own number and name. A weekly assignment or mini-ficha is already individual, so its
+`AUTHORS.txt` names one student and there is nothing to cut - drop the instruction entirely rather
+than asking for a change that is a no-op, and start the numbering at the first real change.
 
 ## 6. Verify locally, then push
 
@@ -255,7 +301,9 @@ Two things to warn the teacher about:
 
 - **The instructions are invisible to students until released, and this is the whole point.** Being
   able to see them earlier is being able to prepare. Activate the assignment early; release the
-  instructions late.
+  instructions late. With one version per turma, this cycle runs once per turma: release that
+  version's instructions when the class starts, toggle them back off when it ends, and leave every
+  other version unreleased in the meantime.
 - **A student who never submitted to the project cannot submit to the defense at all.** Drop Project
   needs a base submission to compare against and rejects the upload without one. Find those students
   before the day.
@@ -271,8 +319,12 @@ searched, so a project done in pairs and defended alone resolves correctly.
 - [ ] The number of tests announced in the instructions matches the number of test methods.
 - [ ] No test asserts through a function that the defense itself asks the student to change.
 - [ ] No test covers behaviour that the project only checked in a hidden test.
+- [ ] Defending a weekly assignment: the original tests are still there, and none of the ones the
+      defense contradicts survived.
 - [ ] Every version asks for the same number and kind of changes, and yields the same number of
       tests.
+- [ ] Defending a weekly assignment or mini-ficha: there is one version per turma, and no version is
+      shared by two turmas that sit at different times.
 - [ ] The instructions never mention the line budget.
 - [ ] `assignees` covers every student sitting, across the versions, with nobody listed twice and
       nobody missing.

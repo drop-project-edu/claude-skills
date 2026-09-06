@@ -21,7 +21,11 @@ The rules of conduct. Reuse the course's own wording verbatim from the previous 
 writing new ones - students recognise them, and they usually carry a stated penalty that the teacher
 has already announced. What they cover:
 
-- what may be consulted: own notes, own weekly exercise code, the course's Moodle, the open internet
+- what may be consulted: own notes, own weekly exercise code, the course's Moodle, and - **only if
+  the teacher confirms it for this defense** - the open internet. This line varies: some defenses
+  allow Google and Stack Overflow, others restrict students to Moodle and nothing else. Ask every
+  time, and do not carry the previous edition's wording over on this one line - the wider rule is
+  not the safe default
 - what may not: generative AI sites, AI plugins such as Copilot, any other human being, messaging
   apps
 - proctoring: stay on the call for the whole session, even after finishing
@@ -39,14 +43,18 @@ Three things, in this order:
 2. **how many tests those changes translate into.** Keep this number true when tests are added or
    removed - students use it to check they have not missed a change.
 3. that the changes must extend the program's behaviour **without breaking what was already there**.
-   This is a grading criterion, so state it, in the teacher's words.
+   This is a grading criterion, so state it, in the teacher's words. When the original tests were
+   kept alongside the defense tests - the usual case when defending a weekly assignment - say that
+   too, and that they must still pass.
 
 ### Instruções
 
 A numbered list, one item per change, in the order the tests report them.
 
-**Item 1 is always `AUTHORS.txt`**: a project made in pairs is defended individually, so the file has
-to be cut down to the student's own number and name.
+**Item 1 is `AUTHORS.txt` when the assignment was done in groups**: a project made in pairs is
+defended individually, so the file has to be cut down to the student's own number and name. Defending
+a weekly assignment or mini-ficha, which was individual to begin with, there is nothing to cut -
+leave the item out and start at the first real change.
 
 For an **unlinked defense**, items 2 to 4 are the setup the linked flow does automatically: create a
 project, use the same package, keep the class names the project required, stub out every required
@@ -77,6 +85,14 @@ Each change should give:
 
 `defesa-v1` of LP2 2025/26, abridged. The original is in Portuguese, which is the language of that
 course's `instructions.md`; write yours in whatever language the students are taught in.
+
+Two lines in it are specific to that defense and must not be copied blindly:
+
+- `Pode consultar o Moodle ou qualquer site da Internet` - confirm with the teacher. When only Moodle
+  is allowed it becomes something like `Pode consultar o Moodle. Não pode consultar qualquer outro
+  site da Internet.`
+- instruction 1, the `AUTHORS.txt` cut-down, is there only because that project was done in pairs.
+  Defending something that was already individual, the numbering starts at the first real change.
 
 ```markdown
 # Defesa do projeto de Linguagens de Programação II (época normal - v1)
