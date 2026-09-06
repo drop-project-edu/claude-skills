@@ -48,6 +48,11 @@ what changing it would do to submissions already graded.
       them.
 - [ ] For a defense: no test depends on functionality the defense itself asks the student to change,
       and no test covers a scenario that only appeared in the project's hidden tests.
+- [ ] **For a defense: nothing the defense asks the student to add is named directly in the test
+      source.** A field, constructor or method referenced by name stops the whole submission from
+      compiling until the student writes it, so every partial answer scores zero instead of partial
+      credit. Reach them by reflection and `fail(...)` with the signature spelled out. Verify by
+      running the suite against the defended assignment's reference solution: it must compile.
 
 ## Feedback quality - the student cannot act on a failure
 

@@ -269,10 +269,39 @@ evade, and no ordinary assertion catches evasion. Two tools:
 |---|---|
 | Class names | Teacher tests live in `src/test` in classes named `TestTeacher*`. Hidden tests go in `TestTeacherHidden*` and need `hiddenTestsVisibility` set on the assignment, usually `SHOW_PROGRESS` |
 | Timeouts | Every test method. JUnit 4: `@Test(timeout = 500)`. JUnit 5: `@Timeout(1)` on the class or the method |
-| Ordering | JUnit 4: `@FixMethodOrder(MethodSorters.NAME_ASCENDING)` plus numbered names. JUnit 5: `@TestMethodOrder(MethodOrderer.OrderAnnotation.class)` plus `@Order(n)` - keep `@Order(n)` and the number in the name in sync |
+| Ordering, within a class | JUnit 4: `@FixMethodOrder(MethodSorters.NAME_ASCENDING)` plus numbered names. JUnit 5: `@TestMethodOrder(MethodOrderer.OrderAnnotation.class)` plus `@Order(n)` - keep `@Order(n)` and the number in the name in sync |
+| Ordering, between classes | Only matters with more than one test class, e.g. a defense that keeps the original suite. In JUnit 5, `@Order(n)` on a *class* is **silently ignored** unless the class orderer is switched on; the annotations look right and do nothing. Turn it on in the surefire configuration of the `pom.xml` (see below) |
 | Mandatory tests | `mandatoryTestsSuffix` on the assignment matches a suffix on the test *method* names, e.g. `_OBG` on `test004_LogicError_OBG()`. A submission failing any of them is not considered valid. Never put the suffix on a hidden test |
 | Stacktraces | Set `packageName` on the assignment, otherwise students see the whole stacktrace instead of their own frames |
 | Shared fixtures | Put the builders shared by public and hidden tests in a plain `TestTeacherCommon` class the test classes extend. Everything under `src/test` must still start with `Test` |
+
+### Switching on the JUnit 5 class orderer
+
+`@Order(n)` on a test class does nothing on its own, and nothing warns you - the report just comes
+out in whatever order the engine picked. Configure the orderer in the surefire plugin, so that it
+travels with the assignment's `pom.xml` rather than a `junit-platform.properties` that Drop Project
+may not copy:
+
+```xml
+<plugin>
+    <artifactId>maven-surefire-plugin</artifactId>
+    <configuration>
+        <argLine>${dp.argLine}</argLine>
+        <trimStackTrace>false</trimStackTrace>
+        <properties>
+            <configurationParameters>
+                junit.jupiter.testclass.order.default = org.junit.jupiter.api.ClassOrderer$OrderAnnotation
+            </configurationParameters>
+        </properties>
+    </configuration>
+</plugin>
+```
+
+Verify it rather than trusting it - the order the classes ran in is in the surefire xml:
+
+```bash
+grep -h '<testcase' target/surefire-reports/*.xml | sed -E 's/.*classname="[^"]*\.([^".]+)".*/\1/'
+```
 
 ### The assertion argument order differs between JUnit 4 and 5
 

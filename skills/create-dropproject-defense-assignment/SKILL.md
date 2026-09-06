@@ -39,8 +39,9 @@ Ask for whatever is missing - none of these is safe to invent:
   reuses verbatim from the previous edition - **except what may be consulted**. Ask explicitly
   whether the open internet is allowed or students are restricted to Moodle: it changes between
   defenses, and it is not safe to copy from last year.
-- **whether this Drop Project instance supports linked defenses** (see below). If unsure, open the
-  assignment creation form and look for an "Assignment type: Normal / Defense" radio.
+- **whether this Drop Project instance supports linked defenses** (see below). If unsure, pass
+  `baseAssignmentId` to `create_assignment`: an instance that supports them answers with a
+  "Defense of '<id>'" section, one that does not rejects the argument.
 
 ### Two ways Drop Project can run a defense
 
@@ -52,9 +53,10 @@ Ask for whatever is missing - none of these is safe to invent:
 | Requires | a Drop Project with the defense feature | any Drop Project |
 
 Prefer the linked defense when the instance offers it. Everything below describes it, with the
-unlinked differences called out. The defense-specific settings (`baseAssignmentId`,
-`maxChangedLines`, releasing the instructions) are **not exposed over the MCP server** - they are set
-in the web ui, on the assignment form.
+unlinked differences called out. `baseAssignmentId` and `maxChangedLines` are ordinary arguments of
+`create_assignment` and `edit_assignment`, so a defense can be registered end to end over MCP.
+**Releasing the instructions is the one thing that is not** - it is a toggle on the assignments list
+in the web ui, and it is what starts the defense.
 
 ### Parallel versions are the norm
 
@@ -150,11 +152,12 @@ a **time-bound** assessment, so the rules from that skill that turn on the clock
 - **Feedback like a mini-test**: enough to act on, and the last assertion of each test function gives
   no hint about inputs or expected values.
 
-On top of that, four things are specific to defenses:
+On top of that, five things are specific to defenses:
 
 **One test class, named after the defense.** `TestTeacherDefesa` (or
-`TestTeacherDefesa<Version>` when several versions share an organization). It extends the fixture
-class kept from the project.
+`TestTeacherDefesa<Version>` when several versions share an organization). Defending a project, it
+extends the fixture class kept from it; defending a weekly assignment, it simply sits next to the
+original test class.
 
 **Ordered by the instructions, not by difficulty.** Students work through the changes in the order
 they are written down, so `test_001_` covers instruction 1. This is the one place where the ordering
@@ -166,6 +169,36 @@ project's test data pass; reusing the same board, the same input file, the same 
 keeps the defense about the change. Editing the fixture is normal - `defesa-v1` changed the
 languages in the shared player fixture so the same helper could feed a test about a tool that only
 works for C programmers.
+
+**Reach everything the defense adds by reflection, never by naming it in the test source.** This is
+the one that bites hardest, because it does not fail like a test - it fails like a build. The teacher
+tests are compiled together with the student's own code, so a test that writes `pessoa.cidade` or
+`new Pessoa(n, a, c)` stops compiling the moment the student has not written that attribute or
+constructor *yet*, or has named it something else. The whole submission then scores zero, including
+the changes they had already finished. Under a clock that is the difference between a bad grade and
+no grade at all.
+
+So look up what the defense asks the student to add - a field, a constructor, a method - with
+`getDeclaredField`, `getDeclaredConstructor` or the `findStaticMethodStartingWith` helper from
+`write-dropproject-teacher-tests`, call `setAccessible(true)`, and `fail(...)` with the missing
+signature spelled out in full:
+
+```java
+private Field campoCidade() {
+    try {
+        Field campo = Pessoa.class.getDeclaredField("cidade");
+        campo.setAccessible(true);
+        return campo;
+    } catch (NoSuchFieldException e) {
+        fail("A classe Pessoa não tem nenhum atributo chamado 'cidade'");
+    }
+    return null;
+}
+```
+
+A student who called it `localidade` now fails one test with a sentence that tells them what to
+rename, instead of failing all of them with a compiler error. Code the defense does *not* change is
+the opposite case: name it directly, so it compiles against what the student already had.
 
 **Test that the untouched behaviour survived.** This is invariant 2, and it is the part teachers
 forget. Two ways, both cheap:
@@ -201,6 +234,11 @@ enforces invariant 2 with tests the student already recognises. Concretely:
 - keep the original names and the original `test_00N_` numbering, so a student reading the report
   recognises which results are old and which are new. Number the defense tests in their own class,
   from 1, following the instructions.
+- **make the original class report first.** With two test classes the report order stops being
+  automatic, and the original results belong on top: the first thing a student has to know is
+  whether they broke what already worked. In JUnit 5 that is `@Order(1)` on the original class and
+  `@Order(2)` on the defense's - plus the surefire configuration in the mechanics table of
+  `write-dropproject-teacher-tests`, **without which those two annotations do nothing at all**.
 - run the original suite against the reference solution of [step 3](#3-apply-the-changes-to-the-reference-solution)
   before pushing. Anything that fails there is a test the defense contradicts and you missed.
 
@@ -252,26 +290,37 @@ the deploy key and connect it. The settings a defense wants:
 | `assignees` | the student ids sitting this version | with `PRIVATE`, this is the whitelist |
 | `minGroupSize`, `maxGroupSize` | `1` and `1` | a defense is individual even when the project was not |
 | `tags` | e.g. `25/26,lp2,defesa` | |
+| `baseAssignmentId` | the id of the assignment being defended | what makes it a linked defense |
+| `maxChangedLines` | see [step 8](#8-choose-maxchangedlines) | only valid together with `baseAssignmentId` |
 | `dueDate` | leave unset | the clock is the session, not a date |
 | `acceptsStudentTests` | unset | |
 | `hiddenTestsVisibility` | unset | a defense has no hidden tests |
 | `cooloffPeriod` | leave unset | a student debugging under a clock resubmits often |
 
-Then, **in the web ui**, on the assignment form:
+Passing `baseAssignmentId` overwrites `packageName`, `minGroupSize` and `maxGroupSize` with the
+defended assignment's package and a group size of 1 - none of those is the defense's to choose, and
+the tool's answer says so. The caller must own the defended assignment, or be authorized on it.
 
-1. set Assignment type to **Defense**
-2. pick the project assignment in **Defense of**, which fills in the package and reports how many
-   lines your own solution changes
-3. set **Max changed lines**
+Nothing else is needed in the web ui at registration time. The one toggle that lives only there is
+**release defense instructions**, which is [step 9](#9-run-the-two-phases-on-the-day).
 
-For an unlinked defense, skip those three and add, as instruction 1 of the exercise, that the
-student must create a project and paste in their own code from the assignment being defended.
+For an unlinked defense, leave `baseAssignmentId` and `maxChangedLines` unset and add, as
+instruction 1 of the exercise, that the student must create a project and paste in their own code
+from the assignment being defended.
 
 ## 8. Choose maxChangedLines
 
 The assignment form tells you how many lines your reference solution changes under `src/main`
-relative to the project's. That number is the floor, not the budget: students write more verbosely
-than the reference solution, and they refactor a little while they work.
+relative to the project's, and so does every submission's page. To get the number before any of that
+exists, diff the two teacher repositories yourself - blank lines do not count, so leave them out:
+
+```bash
+diff -ru --ignore-blank-lines <project repo>/src/main <defense repo>/src/main \
+  | grep -E '^[+-]' | grep -vE '^(\+\+\+|---)' | grep -vcE '^[+-][[:space:]]*$'
+```
+
+That number is the floor, not the budget: students write more verbosely than the reference solution,
+and they refactor a little while they work.
 
 Roughly two to three times the reference divergence is a sane starting point. What the budget has to
 do is catch a *rewrite*, not a wide solution. Leaving it unset is a legitimate choice: the divergence
@@ -318,6 +367,11 @@ searched, so a project done in pairs and defended alone resolves correctly.
 - [ ] The validation report has no errors, for **every** version.
 - [ ] The number of tests announced in the instructions matches the number of test methods.
 - [ ] No test asserts through a function that the defense itself asks the student to change.
+- [ ] No test names, in its source, an attribute, constructor or method that the defense asks the
+      student to add - those go through reflection, or a student who has not written it yet fails to
+      compile and scores zero on everything.
+- [ ] The tests still compile and run against the *original* assignment's reference solution, not
+      only against the defense's. That is the code every student starts the session with.
 - [ ] No test covers behaviour that the project only checked in a hidden test.
 - [ ] Defending a weekly assignment: the original tests are still there, and none of the ones the
       defense contradicts survived.
