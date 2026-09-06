@@ -90,7 +90,9 @@ Three rules deserve spelling out:
 ### Defenses need extra care
 
 A defense asks the student to change their own project during a proctored session, so its tests run
-against code that already has bugs. To avoid grading last month's bugs again:
+against code that already has bugs. Setting the whole thing up - deriving the repository, designing
+the changes, the instructions, the two phases on the day - is the `create-dropproject-defense-assignment`
+skill; what follows is only what it means for the tests. To avoid grading last month's bugs again:
 
 - Build the defense around the project's **mandatory functionality**. If the project defined no
   mandatory tests, at least avoid scenarios that were only covered by the project's *hidden* tests -

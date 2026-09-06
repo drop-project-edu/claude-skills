@@ -9,12 +9,13 @@
     {
       "name": "dropproject-assignments",
       "source": "./",
-      "description": "Create a Drop Project assignment end to end, reuse one from a previous school year, and write the teacher tests that grade it.",
-      "version": "1.1.0",
+      "description": "Create a Drop Project assignment end to end, reuse one from a previous school year, prepare a project defense, and write the teacher tests that grade them.",
+      "version": "1.2.0",
       "license": "Apache-2.0",
       "skills": [
         "./skills/create-dropproject-assignment",
         "./skills/reuse-dropproject-assignment",
+        "./skills/create-dropproject-defense-assignment",
         "./skills/write-dropproject-teacher-tests"
       ]
     }

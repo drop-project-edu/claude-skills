@@ -1,12 +1,13 @@
 # Drop Project skills for Claude Code
 
-Three skills that teach Claude how to set up assignments on
+Four skills that teach Claude how to set up assignments on
 [Drop Project](https://github.com/drop-project-edu/drop-project):
 
 | Skill | What it does |
 |---|---|
 | `create-dropproject-assignment` | Authors the teacher's Maven project, pushes it to a git repository, registers the assignment, installs the deploy key and iterates on the validation report. Ships a Java project template that already passes validation. |
 | `reuse-dropproject-assignment` | Copies last year's assignment repository into this year's organization and registers a new assignment against the copy. |
+| `create-dropproject-defense-assignment` | Prepares a project defense: derives the defense repository from the project's, designs the changes each parallel version asks for, writes the defense tests and the instructions, and runs the two phases on the day. |
 | `write-dropproject-teacher-tests` | Writes or reviews the unit tests that grade an assignment: how many test functions and sub-cases each API function needs, how much feedback to give for the assessment type at hand, and how to keep hardcoded solutions from passing. Follows the recommendations in [Seven Years Later: Lessons Learned in Automated Assessment](https://doi.org/10.4230/OASIcs.ICPEC.2024.3) (ICPEC 2024). |
 
 None of them activates an assignment on its own. They stop at a validated but closed
