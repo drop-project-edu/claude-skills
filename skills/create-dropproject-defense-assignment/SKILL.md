@@ -226,6 +226,11 @@ and the student already saw it pass the week they submitted - so keeping it re-p
 enforces invariant 2 with tests the student already recognises. Concretely:
 
 - keep the original test classes as they are, and add `TestTeacherDefesa` next to them.
+- **strip the gates that make one original test depend on another.** Weekly suites often carry a
+  `if (passed < 9) { fail(...) }` at the top of the last few tests, which is fine over a week and
+  wrong under a clock: one mistake then costs three results and the report stops measuring what the
+  student did in this hour. This is the same rule as **no progressive disclosure** above, applied to
+  the tests that are being kept - the names and the numbering stay, only the gate goes.
 - **delete or adapt every original test the defense contradicts.** If change 3 asks for a new
   `toString()` format, the original test asserting the old format has to go, or be rewritten around
   the part of the format that survives - otherwise the student is graded down for doing exactly what
