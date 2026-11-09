@@ -100,9 +100,16 @@ Then strip what a defense does not need, which is most of the delivery machinery
   defense test gets the input it needs. When defending a **weekly assignment**, keep the original
   tests as well, minus the ones the defense contradicts. See
   [step 4](#the-original-test-suite-project-vs-weekly-assignment).
-- **the GUI simulator, the shade plugin, jacoco**, and anything else that only existed to let
-  students run or cover the project. A defense accepts no student tests.
+- **the shade plugin, jacoco**, and any other build plugin that only existed to let students
+  package or cover the project. A defense accepts no student tests.
 - rename the `artifactId` after the defense.
+
+**Keep every `<dependency>` of the project's pom, with the same version**, even the ones the
+defense does not need, such as a GUI simulator in `runtime` scope. Drop Project rejects a
+submission whose pom has dependencies the assignment's pom doesn't have ("Extra dependencies
+found"), and the students upload the code they submitted to the project, pom included. If a
+dependency is stripped from the defense, every student is blocked at the project structure check
+until they edit the pom themselves.
 
 The package must stay **exactly** the same as the project's: the students' own classes declare it,
 and Drop Project derives the field from the linked assignment.
